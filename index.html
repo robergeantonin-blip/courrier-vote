@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OPÉRATION COURRIER — Vote Surnom</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Special+Elite&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
+
+  :root {
+    --red: #CC0000;
+    --darkred: #8B0000;
+    --gold: #D4AF37;
+    --black: #080808;
+    --offwhite: #F0EAD6;
+    --gray: #2A2A2A;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--black);
+    color: var(--offwhite);
+    font-family: 'Courier Prime', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grain texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0.4;
+  }
+
+  /* Top red bar */
+  .top-bar {
+    background: var(--red);
+    height: 6px;
+    width: 100%;
+  }
+
+  .container {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 20px 40px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 28px 0 20px;
+    border-bottom: 1px solid #333;
+    margin-bottom: 24px;
+  }
+
+  .header .stamp {
+    display: inline-block;
+    border: 2px solid var(--red);
+    color: var(--red);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    padding: 3px 10px;
+    margin-bottom: 14px;
+    transform: rotate(-1deg);
+  }
+
+  .header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .header p {
+    font-size: 11px;
+    color: #888;
+    letter-spacing: 1px;
+    font-style: italic;
+  }
+
+  /* Question */
+  .question {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .question h2 {
+    font-family: 'Special Elite', cursive;
+    font-size: 17px;
+    color: var(--offwhite);
+    line-height: 1.5;
+  }
+
+  .question h2 span {
+    color: var(--gold);
+  }
+
+  /* Vote options */
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .option-btn {
+    background: transparent;
+    border: 1px solid #444;
+    color: var(--offwhite);
+    padding: 18px 20px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Courier Prime', monospace;
+  }
+
+  .option-btn::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: #444;
+    transition: all 0.2s;
+  }
+
+  .option-btn:hover {
+    border-color: var(--gold);
+    background: rgba(212, 175, 55, 0.05);
+  }
+
+  .option-btn:hover::before { background: var(--gold); }
+
+  .option-btn.selected {
+    border-color: var(--red);
+    background: rgba(204, 0, 0, 0.1);
+  }
+
+  .option-btn.selected::before { background: var(--red); width: 4px; }
+
+  .option-btn .opt-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #666;
+    display: block;
+    margin-bottom: 4px;
+    font-family: 'Bebas Neue', sans-serif;
+  }
+
+  .option-btn .opt-name {
+    font-size: 22px;
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 2px;
+    color: var(--offwhite);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .option-btn .opt-desc {
+    font-size: 11px;
+    color: #888;
+    font-style: italic;
+  }
+
+  .option-btn.selected .opt-name { color: var(--gold); }
+
+  /* Submit */
+  .submit-btn {
+    width: 100%;
+    background: var(--red);
+    color: white;
+    border: none;
+    padding: 16px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: block;
+  }
+
+  .submit-btn:hover { background: var(--darkred); }
+  .submit-btn:disabled { background: #333; color: #666; cursor: not-allowed; }
+
+  /* Results */
+  .results {
+    display: none;
+    animation: fadeIn 0.5s ease;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .results-title {
+    text-align: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 14px;
+    letter-spacing: 3px;
+    color: var(--red);
+    margin-bottom: 20px;
+  }
+
+  .result-item {
+    margin-bottom: 16px;
+  }
+
+  .result-item .result-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 2px;
+    color: var(--offwhite);
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+
+  .result-item .result-name .count {
+    color: var(--gold);
+  }
+
+  .result-bar-bg {
+    height: 6px;
+    background: #222;
+    position: relative;
+  }
+
+  .result-bar-fill {
+    height: 100%;
+    background: var(--red);
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 0%;
+  }
+
+  .result-bar-fill.winner { background: var(--gold); }
+
+  .thank-you {
+    text-align: center;
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid #333;
+  }
+
+  .thank-you p {
+    font-size: 11px;
+    color: #666;
+    letter-spacing: 1px;
+    font-style: italic;
+  }
+
+  .thank-you .hammer {
+    font-size: 28px;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  /* Already voted */
+  .already-voted {
+    display: none;
+    text-align: center;
+    padding: 30px 0;
+  }
+
+  .already-voted p {
+    color: #888;
+    font-style: italic;
+    font-size: 13px;
+  }
+
+  /* Bottom bar */
+  .bottom-bar {
+    background: var(--darkred);
+    height: 4px;
+    width: 100%;
+    margin-top: 40px;
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar"></div>
+
+<div class="container">
+  <div class="header">
+    <div class="stamp">☭ DOSSIER CLASSIFIÉ ☭</div>
+    <h1>OPÉRATION<br>COURRIER</h1>
+    <p>Vote officiel du Politburo — Séance plénière</p>
+  </div>
+
+  <!-- VOTE FORM -->
+  <div id="vote-section">
+    <div class="question">
+      <h2>Quel surnom pour<br><span>Antonin Courrier</span> ?</h2>
+    </div>
+
+    <div class="options">
+      <button class="option-btn" onclick="select(0)">
+        <span class="opt-label">Option A</span>
+        <span class="opt-name">L'Oligarque</span>
+        <span class="opt-desc">A trahi le communisme en achetant un appart. Comme par hasard.</span>
+      </button>
+
+      <button class="option-btn" onclick="select(1)">
+        <span class="opt-label">Option B</span>
+        <span class="opt-name">Le Propagandiste</span>
+        <span class="opt-desc">Vous convainc toujours d'aller à un festival. Techniques d'influence avancées.</span>
+      </button>
+
+      <button class="option-btn" onclick="select(2)">
+        <span class="opt-label">Option C</span>
+        <span class="opt-name">Camarade Courrier</span>
+        <span class="opt-desc">Son titre officiel. Le KGB l'a toujours su.</span>
+      </button>
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="submitVote()" disabled>
+      ☭ &nbsp; VOTER POUR LA PATRIE &nbsp; ☭
+    </button>
+  </div>
+
+  <!-- ALREADY VOTED -->
+  <div class="already-voted" id="already-voted">
+    <p>☭ Vote enregistré, camarade.<br>Les résultats s'affichent sur l'écran principal.</p>
+  </div>
+
+  <!-- RESULTS (shown if ?results=1) -->
+  <div class="results" id="results-section">
+    <div class="results-title">☭ RÉSULTATS EN DIRECT ☭</div>
+    <div id="results-list"></div>
+    <div class="thank-you">
+      <span class="hammer">☭</span>
+      <p>Le peuple a parlé.<br>Le Politburo prend note.</p>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar"></div>
+
+<script>
+  const OPTIONS = ["L'Oligarque", "Le Propagandiste", "Camarade Courrier"];
+  const STORAGE_KEY = "courrier_vote_v1";
+  const VOTES_KEY = "courrier_votes_v1";
+
+  let selected = null;
+
+  // Init votes in localStorage if needed
+  function getVotes() {
+    try {
+      const v = localStorage.getItem(VOTES_KEY);
+      return v ? JSON.parse(v) : [0, 0, 0];
+    } catch { return [0, 0, 0]; }
+  }
+
+  function saveVotes(votes) {
+    localStorage.setItem(VOTES_KEY, JSON.stringify(votes));
+  }
+
+  function hasVoted() {
+    return localStorage.getItem(STORAGE_KEY) === "1";
+  }
+
+  function select(idx) {
+    selected = idx;
+    document.querySelectorAll('.option-btn').forEach((btn, i) => {
+      btn.classList.toggle('selected', i === idx);
+    });
+    document.getElementById('submit-btn').disabled = false;
+  }
+
+  function submitVote() {
+    if (selected === null) return;
+    const votes = getVotes();
+    votes[selected]++;
+    saveVotes(votes);
+    localStorage.setItem(STORAGE_KEY, "1");
+
+    document.getElementById('vote-section').style.display = 'none';
+    document.getElementById('already-voted').style.display = 'block';
+  }
+
+  function showResults() {
+    document.getElementById('vote-section').style.display = 'none';
+    document.getElementById('already-voted').style.display = 'none';
+    document.getElementById('results-section').style.display = 'block';
+
+    const votes = getVotes();
+    const total = votes.reduce((a, b) => a + b, 0) || 1;
+    const maxVotes = Math.max(...votes);
+
+    const container = document.getElementById('results-list');
+    container.innerHTML = '';
+
+    // Sort by votes desc
+    const sorted = OPTIONS.map((name, i) => ({ name, votes: votes[i], idx: i }))
+      .sort((a, b) => b.votes - a.votes);
+
+    sorted.forEach(({ name, votes: v }) => {
+      const pct = Math.round((v / total) * 100);
+      const isWinner = v === maxVotes && maxVotes > 0;
+      const div = document.createElement('div');
+      div.className = 'result-item';
+      div.innerHTML = `
+        <div class="result-name">
+          <span>${isWinner ? '🏆 ' : ''}${name}</span>
+          <span class="count">${v} vote${v !== 1 ? 's' : ''} — ${pct}%</span>
+        </div>
+        <div class="result-bar-bg">
+          <div class="result-bar-fill ${isWinner ? 'winner' : ''}" data-pct="${pct}"></div>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+
+    // Animate bars
+    setTimeout(() => {
+      document.querySelectorAll('.result-bar-fill').forEach(bar => {
+        bar.style.width = bar.dataset.pct + '%';
+      });
+    }, 100);
+
+    // Auto-refresh every 3s
+    setTimeout(showResults, 3000);
+  }
+
+  // Check URL params
+  const params = new URLSearchParams(window.location.search);
+
+  if (params.get('results') === '1') {
+    showResults();
+  } else if (hasVoted()) {
+    document.getElementById('vote-section').style.display = 'none';
+    document.getElementById('already-voted').style.display = 'block';
+  }
+
+  // Reset votes (debug): ?reset=1
+  if (params.get('reset') === '1') {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(VOTES_KEY);
+    window.location.href = window.location.pathname;
+  }
+</script>
+
+</body>
+</html>
