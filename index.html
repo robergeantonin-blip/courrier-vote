@@ -209,9 +209,21 @@
   const params = new URLSearchParams(window.location.search);
   if (params.get('results') === '1') {
     showResults();
-  } else if (localStorage.getItem(VOTED_KEY) === '1') {
-    hide('vote-section');
-    show('already-voted');
+  } else {
+    // Check if votes were reset on the server — if so, clear local voted flag
+    getVotes().then(votes => {
+      const total = votes.reduce((a, b) => a + b, 0);
+      if (total === 0) localStorage.removeItem(VOTED_KEY);
+      if (localStorage.getItem(VOTED_KEY) === '1') {
+        hide('vote-section');
+        show('already-voted');
+      }
+    }).catch(() => {
+      if (localStorage.getItem(VOTED_KEY) === '1') {
+        hide('vote-section');
+        show('already-voted');
+      }
+    });
   }
 </script>
 </body>
